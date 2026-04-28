@@ -28,7 +28,7 @@
 
         <div class="hero-v2-actions">
             <a href="{{ url_for('register') }}" class="btn-hero">Create free account</a>
-            <a href="#" class="btn-hero">See how it works</a>
+            <a href="#" class="btn-hero" id="btn-how-it-works">See how it works</a>
         </div>
 
         <div class="mock-browser">
@@ -109,4 +109,59 @@
     </div>
 </section>
 
+<!-- Video modal -->
+<div class="modal-overlay" id="video-modal" aria-hidden="true">
+    <div class="modal-box">
+        <button class="modal-close" id="modal-close" aria-label="Close video">&times;</button>
+        <div class="modal-video-wrap">
+            <iframe id="modal-iframe"
+                    src=""
+                    data-src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                    allow="autoplay; encrypted-media"
+                    allowfullscreen
+                    frameborder="0">
+            </iframe>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    var modal    = document.getElementById('video-modal');
+    var iframe   = document.getElementById('modal-iframe');
+    var btnOpen  = document.getElementById('btn-how-it-works');
+    var btnClose = document.getElementById('modal-close');
+    var dataSrc  = iframe.getAttribute('data-src');
+
+    function openModal() {
+        iframe.src = dataSrc;
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeModal() {
+        iframe.src = '';
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+    }
+
+    btnOpen.addEventListener('click', function (e) {
+        e.preventDefault();
+        openModal();
+    });
+
+    btnClose.addEventListener('click', closeModal);
+
+    modal.addEventListener('click', function (e) {
+        if (e.target === modal) closeModal();
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeModal();
+    });
+}());
+</script>
 {% endblock %}
