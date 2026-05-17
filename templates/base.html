@@ -19,21 +19,12 @@
                 <span class="brand-name">Spendly</span>
             </a>
             <div class="nav-links">
-<<<<<<< HEAD
-                {% if session.user_id %}
-                <span class="nav-user">{{ session.user_name }}</span>
-                <a href="{{ url_for('logout') }}" class="nav-cta">Logout</a>
-                {% else %}
-                <a href="{{ url_for('login') }}">Sign in</a>
-                <a href="{{ url_for('register') }}" class="nav-cta">Get started</a>
-=======
                 {% if session.get("user_id") %}
                     <span class="nav-welcome">Welcome, {{ session["user_name"] }}</span>
                     <a href="{{ url_for('logout') }}" class="nav-cta">Logout</a>
                 {% else %}
                     <a href="{{ url_for('login') }}">Sign in</a>
                     <a href="{{ url_for('register') }}" class="nav-cta">Get started</a>
->>>>>>> main
                 {% endif %}
             </div>
         </div>
