@@ -1,6 +1,12 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.security import check_password_hash
 from database.db import get_db, init_db, seed_db, create_user, get_user_by_email
+from database.queries import (
+    get_user_by_id,
+    get_summary_stats,
+    get_recent_transactions,
+    get_category_breakdown,
+)
 
 app = Flask(__name__)
 app.secret_key = "spendly-dev-secret"
@@ -85,36 +91,12 @@ def profile():
     if not session.get("user_id"):
         return redirect(url_for("login"))
 
-    user = {
-        "name":         session["user_name"],
-        "email":        "demo@spendly.com",
-        "member_since": "January 2024",
-        "initials":     session["user_name"][:2].upper(),
-    }
+    user  = get_user_by_id(session["user_id"])
+    stats = get_summary_stats(session["user_id"])
 
-    stats = {
-        "total_spent":       "₹396.24",
-        "transaction_count": 8,
-        "top_category":      "Bills",
-    }
+    transactions = get_recent_transactions(session["user_id"])
 
-    transactions = [
-        {"date": "May 17, 2026", "description": "Lunch at cafe",          "category": "Food",          "amount": "₹15.75"},
-        {"date": "May 14, 2026", "description": "New shoes",               "category": "Shopping",      "amount": "₹89.99"},
-        {"date": "May 10, 2026", "description": "Streaming subscriptions", "category": "Entertainment", "amount": "₹30.00"},
-        {"date": "May 8,  2026", "description": "Pharmacy",                "category": "Health",        "amount": "₹55.00"},
-        {"date": "May 5,  2026", "description": "Electricity bill",        "category": "Bills",         "amount": "₹120.00"},
-    ]
-
-    categories = [
-        {"name": "Bills",         "amount": "₹120.00", "pct": 30},
-        {"name": "Shopping",      "amount": "₹89.99",  "pct": 23},
-        {"name": "Food",          "amount": "₹58.25",  "pct": 15},
-        {"name": "Health",        "amount": "₹55.00",  "pct": 14},
-        {"name": "Entertainment", "amount": "₹30.00",  "pct": 8},
-        {"name": "Other",         "amount": "₹25.00",  "pct": 6},
-        {"name": "Transport",     "amount": "₹18.00",  "pct": 5},
-    ]
+    categories = get_category_breakdown(session["user_id"])
 
     return render_template("profile.html",
                            user=user, stats=stats,
