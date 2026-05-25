@@ -3,6 +3,18 @@
 from database.db import get_db
 
 
+def _date_where(date_from, date_to):
+    clauses, params = [], []
+    if date_from:
+        clauses.append("date >= ?")
+        params.append(date_from)
+    if date_to:
+        clauses.append("date <= ?")
+        params.append(date_to)
+    sql = (" AND " + " AND ".join(clauses)) if clauses else ""
+    return sql, params
+
+
 def get_user_by_id(user_id):
     conn = get_db()
     row = conn.execute(
@@ -22,17 +34,18 @@ def get_user_by_id(user_id):
     }
 
 
-def get_summary_stats(user_id):
+def get_summary_stats(user_id, date_from=None, date_to=None):
     conn = get_db()
+    ds, dp = _date_where(date_from, date_to)
     total_row = conn.execute(
-        "SELECT COALESCE(SUM(amount), 0.0) AS total, COUNT(*) AS cnt "
-        "FROM expenses WHERE user_id = ?",
-        (user_id,),
+        f"SELECT COALESCE(SUM(amount), 0.0) AS total, COUNT(*) AS cnt "
+        f"FROM expenses WHERE user_id = ?{ds}",
+        (user_id, *dp),
     ).fetchone()
     top_row = conn.execute(
-        "SELECT category FROM expenses WHERE user_id = ? "
-        "GROUP BY category ORDER BY SUM(amount) DESC LIMIT 1",
-        (user_id,),
+        f"SELECT category FROM expenses WHERE user_id = ?{ds} "
+        f"GROUP BY category ORDER BY SUM(amount) DESC LIMIT 1",
+        (user_id, *dp),
     ).fetchone()
     conn.close()
     return {
@@ -42,12 +55,13 @@ def get_summary_stats(user_id):
     }
 
 
-def get_recent_transactions(user_id, limit=10):
+def get_recent_transactions(user_id, limit=10, date_from=None, date_to=None):
     conn = get_db()
+    ds, dp = _date_where(date_from, date_to)
     rows = conn.execute(
-        "SELECT date, description, category, amount FROM expenses "
-        "WHERE user_id = ? ORDER BY date DESC, id DESC LIMIT ?",
-        (user_id, limit),
+        f"SELECT date, description, category, amount FROM expenses "
+        f"WHERE user_id = ?{ds} ORDER BY date DESC, id DESC LIMIT ?",
+        (user_id, *dp, limit),
     ).fetchall()
     conn.close()
     from datetime import datetime
@@ -64,12 +78,13 @@ def get_recent_transactions(user_id, limit=10):
     return result
 
 
-def get_category_breakdown(user_id):
+def get_category_breakdown(user_id, date_from=None, date_to=None):
     conn = get_db()
+    ds, dp = _date_where(date_from, date_to)
     rows = conn.execute(
-        "SELECT category, SUM(amount) AS cat_total FROM expenses "
-        "WHERE user_id = ? GROUP BY category ORDER BY cat_total DESC",
-        (user_id,),
+        f"SELECT category, SUM(amount) AS cat_total FROM expenses "
+        f"WHERE user_id = ?{ds} GROUP BY category ORDER BY cat_total DESC",
+        (user_id, *dp),
     ).fetchall()
     conn.close()
     if not rows:

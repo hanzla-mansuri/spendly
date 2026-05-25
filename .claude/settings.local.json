@@ -1,1 +1,8 @@
-{}
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"from database.queries import get_summary_stats, get_recent_transactions, get_category_breakdown; print\\('OK'\\)\")",
+      "Bash(python -m pytest tests/test_date_filter.py -v)"
+    ]
+  }
+}
