@@ -1,5 +1,7 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import check_password_hash
+from datetime import date, datetime
+import calendar
 from database.db import get_db, init_db, seed_db, create_user, get_user_by_email
 from database.queries import (
     get_user_by_id,
@@ -10,6 +12,16 @@ from database.queries import (
 
 app = Flask(__name__)
 app.secret_key = "spendly-dev-secret"
+
+
+def _months_back(today, n):
+    m = today.month - n
+    y = today.year + m // 12
+    m = m % 12
+    if m == 0:
+        m = 12
+        y -= 1
+    return today.replace(year=y, month=m, day=min(today.day, calendar.monthrange(y, m)[1]))
 
 
 # ------------------------------------------------------------------ #
@@ -91,16 +103,49 @@ def profile():
     if not session.get("user_id"):
         return redirect(url_for("login"))
 
-    user  = get_user_by_id(session["user_id"])
-    stats = get_summary_stats(session["user_id"])
+    today     = date.today()
+    today_str = today.isoformat()
 
-    transactions = get_recent_transactions(session["user_id"])
+    presets = {
+        "this_month":    (today.replace(day=1).isoformat(), today_str),
+        "last_3_months": (_months_back(today, 3).isoformat(), today_str),
+        "last_6_months": (_months_back(today, 6).isoformat(), today_str),
+    }
 
-    categories = get_category_breakdown(session["user_id"])
+    def _parse_date(raw):
+        try:
+            datetime.strptime(raw.strip(), "%Y-%m-%d")
+            return raw.strip()
+        except (ValueError, AttributeError):
+            return None
+
+    date_from = _parse_date(request.args.get("date_from", ""))
+    date_to   = _parse_date(request.args.get("date_to", ""))
+
+    if date_from and date_to and date_from > date_to:
+        flash("Start date must be before end date.")
+        date_from = None
+        date_to   = None
+
+    active_preset = "all_time"
+    for name, (pf, pt) in presets.items():
+        if (date_from, date_to) == (pf, pt):
+            active_preset = name
+            break
+    else:
+        if date_from is not None or date_to is not None:
+            active_preset = "custom"
+
+    user         = get_user_by_id(session["user_id"])
+    stats        = get_summary_stats(session["user_id"], date_from=date_from, date_to=date_to)
+    transactions = get_recent_transactions(session["user_id"], date_from=date_from, date_to=date_to)
+    categories   = get_category_breakdown(session["user_id"], date_from=date_from, date_to=date_to)
 
     return render_template("profile.html",
                            user=user, stats=stats,
-                           transactions=transactions, categories=categories)
+                           transactions=transactions, categories=categories,
+                           date_from=date_from, date_to=date_to,
+                           presets=presets, active_preset=active_preset)
 
 
 @app.route("/expenses/add")
