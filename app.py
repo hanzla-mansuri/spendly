@@ -2,12 +2,9 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from werkzeug.security import check_password_hash
 from datetime import date, datetime
 import calendar
-from database.db import get_db, init_db, seed_db, create_user, get_user_by_email
-from database.queries import (
-    get_user_by_id,
-    get_summary_stats,
-    get_recent_transactions,
-    get_category_breakdown,
+from database.db import (
+    get_db, init_db, seed_db, create_user, get_user_by_email,
+    get_user_by_id, get_summary_stats, get_recent_transactions, get_category_breakdown,
 )
 
 app = Flask(__name__)

@@ -1,5 +1,5 @@
 import pytest
-from database.queries import (
+from database.db import (
     get_user_by_id,
     get_summary_stats,
     get_recent_transactions,
