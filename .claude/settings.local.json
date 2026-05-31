@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(python -c \"from database.queries import get_summary_stats, get_recent_transactions, get_category_breakdown; print\\('OK'\\)\")",
-      "Bash(python -m pytest tests/test_date_filter.py -v)"
+      "Bash(python -m pytest tests/test_date_filter.py -v)",
+      "mcp__sqlite__describe_table",
+      "mcp__sqlite__read_query",
+      "mcp__plugin_figma_figma__get_design_context",
+      "WebFetch(domain:www.figma.com)"
     ]
   }
 }
