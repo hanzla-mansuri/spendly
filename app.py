@@ -1,3 +1,4 @@
+import os
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import check_password_hash
 from datetime import date, datetime
@@ -5,10 +6,13 @@ import calendar
 from database.db import (
     get_db, init_db, seed_db, create_user, get_user_by_email,
     get_user_by_id, get_summary_stats, get_recent_transactions, get_category_breakdown,
+    add_expense,
 )
 
+VALID_CATEGORIES = ["Food", "Transport", "Bills", "Health", "Entertainment", "Shopping", "Other"]
+
 app = Flask(__name__)
-app.secret_key = "spendly-dev-secret"
+app.secret_key = os.environ.get("SECRET_KEY") or "dev-only-do-not-use-in-prod"
 
 
 def _months_back(today, n):
@@ -145,9 +149,65 @@ def profile():
                            presets=presets, active_preset=active_preset)
 
 
-@app.route("/expenses/add")
-def add_expense():
-    return "Add expense — coming in Step 7"
+@app.route("/analytics")
+def analytics():
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+    return render_template("analytics.html")
+
+
+
+@app.route("/expenses/add", methods=["GET", "POST"])
+def add_expense_view():
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+        amount_raw  = request.form.get("amount", "").strip()
+        category    = request.form.get("category", "").strip()
+        date_raw    = request.form.get("date", "").strip()
+        description = request.form.get("description", "").strip()
+
+        error = None
+        amount = None
+        if not amount_raw:
+            error = "Amount is required."
+        else:
+            try:
+                amount = float(amount_raw)
+                if amount <= 0:
+                    error = "Amount must be a positive number."
+            except ValueError:
+                error = "Amount must be a valid number."
+
+        if error is None and category not in VALID_CATEGORIES:
+            error = "Please select a valid category."
+
+        if error is None:
+            try:
+                datetime.strptime(date_raw, "%Y-%m-%d")
+            except ValueError:
+                error = "Date must be in YYYY-MM-DD format."
+
+        if error:
+            return render_template(
+                "add_expense.html",
+                error=error,
+                form=request.form,
+                categories=VALID_CATEGORIES,
+            )
+
+        add_expense(
+            user_id=session["user_id"],
+            amount=amount,
+            category=category,
+            expense_date=date_raw,
+            description=description or None,
+        )
+        flash("Expense added.")
+        return redirect(url_for("profile"))
+
+    return render_template("add_expense.html", categories=VALID_CATEGORIES, form={})
 
 
 @app.route("/expenses/<int:id>/edit")
@@ -164,4 +224,4 @@ if __name__ == "__main__":
     with app.app_context():
         init_db()
         seed_db()
-    app.run(debug=True, port=5001)
+    app.run(debug=os.environ.get("FLASK_DEBUG", "0") == "1", port=5001)

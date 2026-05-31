@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics — Spendly{% endblock %}
+
+{% block content %}
+<div class="soon-page">
+    <div class="soon-inner">
+
+        <span class="hero-badge">Coming Soon</span>
+
+        <h1 class="soon-title">
+            <em>Analytics</em>
+        </h1>
+
+        <p class="soon-subtitle">
+            Deep insights into your spending habits are on their way.
+            Track trends, spot patterns, and take full control of your finances.
+        </p>
+
+        <div class="soon-features">
+            <div class="soon-feature">
+                <div class="soon-feature-icon"><i data-lucide="trending-up"></i></div>
+                <h3 class="soon-feature-title">Spending Trends</h3>
+                <p class="soon-feature-body">Visualise how your spending shifts month over month with clean, readable charts.</p>
+            </div>
+            <div class="soon-feature">
+                <div class="soon-feature-icon"><i data-lucide="pie-chart"></i></div>
+                <h3 class="soon-feature-title">Category Breakdown</h3>
+                <p class="soon-feature-body">See exactly where your money goes with a full breakdown across every category.</p>
+            </div>
+            <div class="soon-feature">
+                <div class="soon-feature-icon"><i data-lucide="target"></i></div>
+                <h3 class="soon-feature-title">Budget Goals</h3>
+                <p class="soon-feature-body">Set monthly targets and track your progress in real time against your spending goals.</p>
+            </div>
+        </div>
+
+        <a href="{{ url_for('profile') }}" class="btn-ghost">← Back to Profile</a>
+
+    </div>
+</div>
+{% endblock %}
