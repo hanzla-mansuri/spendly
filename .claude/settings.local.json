@@ -6,7 +6,8 @@
       "mcp__sqlite__describe_table",
       "mcp__sqlite__read_query",
       "mcp__plugin_figma_figma__get_design_context",
-      "WebFetch(domain:www.figma.com)"
+      "WebFetch(domain:www.figma.com)",
+      "Bash(python -m pytest tests/test_07-add-expense.py -v)"
     ]
   }
 }

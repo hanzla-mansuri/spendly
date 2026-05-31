@@ -92,10 +92,15 @@
 
         <!-- Recent transactions -->
         <div class="profile-section">
-            <h2 class="section-title">
-                <i data-lucide="receipt"></i>
-                Recent Transactions
-            </h2>
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i data-lucide="receipt"></i>
+                    Recent Transactions
+                </h2>
+                <a href="{{ url_for('add_expense_view') }}" class="btn-primary">
+                    + Add Expense
+                </a>
+            </div>
             <div class="tx-table-wrap">
                 <table class="tx-table">
                     <thead>
